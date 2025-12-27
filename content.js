@@ -92,7 +92,6 @@
                                 elementsRemovedThisCycle++;
                             }
                         } catch (error) {
-                            // Игнорируем ошибки
                         }
                     });
                 }
