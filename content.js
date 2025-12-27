@@ -65,36 +65,49 @@
     function removeElements() {
         if (!isExtensionEnabled) return;
         
-        // Element that holds Shorts Panel
-        const elements = document.querySelectorAll('ytd-rich-shelf-renderer');
+        const selectorsToRemove = [
+            'ytd-rich-shelf-renderer',
+            'grid-shelf-view-model'
+        ];
         
-        if (elements.length > 0) {
-            elements.forEach(element => {
-                try {
-                    if (element && element.parentNode && isElementVisible(element)) {
-                        element.style.cssText = `
-                            display: none !important;
-                            height: 0 !important;
-                            overflow: hidden !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                        `;
-                        
-                        element.classList.add('youtube-cleaner-removed');
-                        
-                        removedCount++;
-                        
-                        chrome.storage.local.set({removedCount: removedCount});
-                        
-                        chrome.runtime.sendMessage({
-                            action: 'updateCounter',
-                            count: removedCount
-                        });
-                    }
-                } catch (error) {
+        let elementsRemovedThisCycle = 0;
+        
+        selectorsToRemove.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                
+                if (elements.length > 0) {
+                    elements.forEach(element => {
+                        try {
+                            if (element && element.parentNode && isElementVisible(element)) {
+                                element.style.cssText = `
+                                    display: none !important;
+                                    height: 0 !important;
+                                    overflow: hidden !important;
+                                    margin: 0 !important;
+                                    padding: 0 !important;
+                                `;
+                                
+                                element.classList.add('youtube-cleaner-removed');
+                                
+                                elementsRemovedThisCycle++;
+                            }
+                        } catch (error) {
+                            // Игнорируем ошибки
+                        }
+                    });
                 }
             });
-        }
+            
+            if (elementsRemovedThisCycle > 0) {
+                removedCount += elementsRemovedThisCycle;
+                
+                chrome.storage.local.set({removedCount: removedCount});
+                
+                chrome.runtime.sendMessage({
+                    action: 'updateCounter',
+                    count: removedCount
+                });
+            }
     }
     
     function isElementVisible(element) {
